@@ -37,6 +37,7 @@ def commit(session):
     response = session.post('https://xxcapp.xidian.edu.cn/xisuncov/wap/open-report/save',
                             headers=headers, data=data)
     print(response.status_code, response.text)
+    return response
 
 
 if __name__ == '__main__':

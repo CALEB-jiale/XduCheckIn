@@ -1,10 +1,12 @@
-from flask import Flask, escape, request, render_template
+from flask import Flask, escape, request, render_template, jsonify
 import file_util
 
 import flask_sqlalchemy
 from crawl import util
 from flask_apscheduler import APScheduler
 from apscheduler.schedulers.background import BackgroundScheduler
+import time
+import json
 app = Flask("XDU_Check_In")
 app.config['SQLALCHEMY_ECHO'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data/data.db'
@@ -14,7 +16,7 @@ db = flask_sqlalchemy.SQLAlchemy(app)
 
 
 class User(db.Model):
-    __tablename__ = 'users'
+    __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True)
     password = db.Column(db.String(64))
@@ -22,6 +24,19 @@ class User(db.Model):
     def __init__(self, username, password):
         self.username = username
         self.password = password
+
+
+class Log(db.Model):
+    __tablename__ = 'log'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(64), unique=True)
+    message = db.Column(db.String(64))
+    checktime = db.Column(db.Integer)
+
+    def __init__(self, username, message):
+        self.username = username
+        self.message = message
+        self.checktime = int(round(time.time()))
 
 
 def init():
@@ -38,14 +53,27 @@ def init():
 @app.route('/api/register', methods=['post'])
 def register():
     js = request.get_json(force=True)
-    u = User(js['username'], js['password'])
 
     r = util.is_login_success(js['username'], js['password'])
     if not r:
-        return 'login failed'
-    db.session.add(u)
-    db.session.commit()
-    return ''
+        return json.dumps({"data": '', "message": "Login failed"}, ensure_ascii=False)
+    users = User.query.filter_by(username=js['username']).all()
+    if len(users) > 0:
+        u = users[0]
+        u.password = js['password']
+        db.session.commit()
+
+    else:
+        u = User(js['username'], js['password'])
+        db.session.add(u)
+        db.session.commit()
+
+    logs = Log.query.filter_by(username=js['username']).all()
+    d = []
+    for log in logs:
+        d.append({"checktime": log.checktime, "message": log.message})
+    print(d)
+    return json.dumps({"data": d, "message": "Login Success"}, ensure_ascii=False)
 
 
 @app.route('/', methods=['get', 'post'])
@@ -63,7 +91,10 @@ def commit_all():
     print('commit')
     users = User.query.all()
     for user in users:
-        util.commit_data(user.username, user.password)
+        message = util.commit_data(user.username, user.password)
+        log = Log(user.username, message)
+        db.session.add(log)
+        db.session.commit()
     return 'commit finish'
 
 
@@ -72,16 +103,15 @@ class APSchedulerJobConfig(object):
     SCHEDULER_TIMEZONE = 'Asia/Shanghai'
     JOBS = [
         {
-            'id': 'commit_all',  # 任务唯一ID
-            # 执行任务的function名称，app.test 就是 app下面的`test.py` 文件，`shishi` 是方法名称。文件模块和方法之间用冒号":"，而不是用英文的"."
+            'id': 'commit_all',
             'func': commit_all,
-            'args': '',  # 如果function需要参数，就在这里添加
+            'args': '',
             'trigger': {
-                'type': 'cron',  # 类型
-                'day_of_week': "0-6",  # 可定义具体哪几天要执行
-                'hour': '6,12,18',  # 小时数
+                'type': 'cron',
+                'day_of_week': "0-6",
+                'hour': '6,12,18',
                 'minute': '3',
-                'second': '0'  # "*/3" 表示每3秒执行一次，单独一个"3" 表示每分钟的3秒。现在就是每一分钟的第3秒时循环执行。
+                'second': '0'
             }
         }
     ]

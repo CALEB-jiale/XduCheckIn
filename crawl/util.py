@@ -1,3 +1,4 @@
+# encoding:utf8
 import requests
 from . import login
 from . import get_data
@@ -19,4 +20,6 @@ def is_login_success(username, password):
 def commit_data(username, password):
     sess = requests.session()
     login.login(sess, username, password)
-    commit.commit(sess)
+    res = commit.commit(sess)
+    js = json.loads(res.text)
+    return js['m']
