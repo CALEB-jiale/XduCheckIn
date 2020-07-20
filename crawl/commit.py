@@ -2,7 +2,7 @@
 
 import requests
 
-from crawl.login import login
+from . import login
 
 
 def commit(session):
@@ -41,5 +41,5 @@ def commit(session):
 
 if __name__ == '__main__':
     sess = requests.session()
-    login(sess, '', '')
+    login.login(sess, '', '')
     commit(sess)
