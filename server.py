@@ -1,10 +1,10 @@
-from flask import Flask, escape, request
+from flask import Flask, escape, request, render_template
 import file_util
 
 import flask_sqlalchemy
 from crawl import util
 from flask_apscheduler import APScheduler
-from apscheduler.schedulers.background import BackgroundScheduler 
+from apscheduler.schedulers.background import BackgroundScheduler
 app = Flask("XDU_Check_In")
 app.config['SQLALCHEMY_ECHO'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data/data.db'
@@ -35,7 +35,7 @@ def init():
     scheduler.start()
 
 
-@app.route('/register', methods=['post'])
+@app.route('/api/register', methods=['post'])
 def register():
     js = request.get_json(force=True)
     u = User(js['username'], js['password'])
@@ -50,10 +50,15 @@ def register():
 
 @app.route('/', methods=['get', 'post'])
 def index():
-    return ''
+    return render_template('index.html')
 
 
-@app.route('/commit', methods=['get'])
+@app.route('/index.js', methods=['get'])
+def get_js():
+    return render_template('index.js')
+
+
+@app.route('/api/commit', methods=['get'])
 def commit_all():
     print('commit')
     users = User.query.all()
