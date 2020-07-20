@@ -97,6 +97,9 @@ def commit_all():
         db.session.commit()
     return 'commit finish'
 
+@app.route('/api/version', methods=['get'])
+def version():
+    return file_util.read_all_text('version.txt')
 
 class APSchedulerJobConfig(object):
     SCHEDULER_API_ENABLED = True
