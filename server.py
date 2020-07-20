@@ -29,7 +29,7 @@ class User(db.Model):
 class Log(db.Model):
     __tablename__ = 'log'
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), unique=True)
+    username = db.Column(db.String(64))
     message = db.Column(db.String(64))
     checktime = db.Column(db.Integer)
 
