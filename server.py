@@ -49,6 +49,14 @@ class User(db.Model):
 db.create_all()
 
 
+@app.route('/commit', methods=['get'])
+def commit_all():
+    print('commit')
+    users = User.query.all()
+    for user in users:
+        util.commit_data(user.username, user.password)
+    return 'commit finish'
+
 
 if __name__ == "__main__":
     init()
