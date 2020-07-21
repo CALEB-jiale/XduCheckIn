@@ -17,18 +17,32 @@ Date.prototype.Format = function (fmt) { //author: meizz
     return fmt;
 }
 
+getUserNum()
+
+function getUserNum() {
+    $.get("/api/usernum", "", function (msg) {
+        $("#p_usernum").html('已经服务的用户人数 '+msg)
+    })
+}
+
 function submit() {
     var un = $("#text_username").val()
     var pd = $("#text_password").val()
     var data = { "username": un, "password": pd }
     $.post("/api/register", JSON.stringify(data), function (msg) {
         var obj = JSON.parse(msg)
-        $("#p_message").html(obj['message'])
+
+        var message = obj['message']
+        if (message.search('Success') != -1 && obj['data'].length === 0) {
+            message += ' 以后登录可以在此查看每次的签到情况'
+        }
+        $("#p_message").html(message)
         html = ""
         for (i = 0; i < obj['data'].length; i++) {
             var date = new Date(parseInt(obj['data'][i]["checktime"]) * 1000)
             html += "<p> checktime= " + date.Format("yyyy-MM-dd hh:mm:ss") + " message = " + obj['data'][i]["message"] + "</p>"
         }
         $("#div_log").html(html)
+        getUserNum()
     })
 }

@@ -85,6 +85,9 @@ def index():
 def get_js():
     return render_template('index.js')
 
+@app.route('/api/usernum', methods=['get'])
+def get_user_num():
+    return str(len(User.query.all()))
 
 @app.route('/api/commit', methods=['get'])
 def commit_all():
