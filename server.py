@@ -65,6 +65,7 @@ def register():
 
     else:
         u = User(js['username'], js['password'])
+        commit_data_with_log(u)
         db.session.add(u)
         db.session.commit()
 
@@ -85,24 +86,32 @@ def index():
 def get_js():
     return render_template('index.js')
 
+
 @app.route('/api/usernum', methods=['get'])
 def get_user_num():
     return str(len(User.query.all()))
+
 
 @app.route('/api/commit', methods=['get'])
 def commit_all():
     print('commit')
     users = User.query.all()
     for user in users:
-        message = util.commit_data(user.username, user.password)
-        log = Log(user.username, message)
-        db.session.add(log)
-        db.session.commit()
+        commit_data_with_log(user)
     return 'commit finish'
+
+
+def commit_data_with_log(user):
+    message = util.commit_data(user.username, user.password)
+    log = Log(user.username, message)
+    db.session.add(log)
+    db.session.commit()
+
 
 @app.route('/api/version', methods=['get'])
 def version():
     return file_util.read_all_text('version.txt')
+
 
 class APSchedulerJobConfig(object):
     SCHEDULER_API_ENABLED = True
