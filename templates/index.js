@@ -21,7 +21,7 @@ getUserNum()
 
 function getUserNum() {
     $.get("/api/usernum", "", function (msg) {
-        $("#p_usernum").html('已经服务的用户人数 '+msg)
+        $("#p_usernum").html('已经服务的用户人数 ' + msg)
     })
 }
 
@@ -33,7 +33,7 @@ function submit() {
         var obj = JSON.parse(msg)
 
         var message = obj['message']
-        if (message.search('Success') != -1 && obj['data'].length === 0) {
+        if (message.search('Success') != -1 && obj['data'].length <= 1) {
             message += ' 以后登录可以在此查看每次的签到情况'
         }
         $("#p_message").html(message)
