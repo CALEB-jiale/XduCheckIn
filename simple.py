@@ -61,6 +61,7 @@ def commit(session):
 
     response = session.post('https://xxcapp.xidian.edu.cn/xisuncov/wap/open-report/save',
                             headers=headers, data=data)
+
     # print(response.status_code, response.text)
     return response
 
@@ -77,6 +78,16 @@ def server_jiang_push(SCKEY: str, message):
     requests.get(f'https://sc.ftqq.com/{SCKEY}.send?text={message}')
 
 
+def send_log(student_id, message):
+    js = json.dumps({"student_id": str(student_id),
+                     "message": message}, ensure_ascii=False).encode('utf-8')
+
+    res = requests.post(
+        'http://XduCheckInLog.117503445.top:8013/api/log', data=js)
+    if res.text == 'success':
+        print('log success')
+
+
 def main_handler(event, context):
 
     student_id = ''
@@ -87,9 +98,11 @@ def main_handler(event, context):
     SCKEY = ''
 
     message = commit_data(student_id, password)
-    
+
     if SCKEY != '':
         server_jiang_push(SCKEY, message)
+
+    send_log(student_id, message)  # 可选,上传日志,帮助开发者优化程序:D
 
 
 if __name__ == "__main__":
