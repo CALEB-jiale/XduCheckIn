@@ -1,7 +1,8 @@
 import requests
 import json
 import time
-
+import pytz
+import datetime
 
 def login(session, username, password):
     headers = {
@@ -87,6 +88,20 @@ def send_log(student_id, message):
     if res.text == 'success':
         print('log success')
 
+# return '晨' or '午' or '晚' or '凌晨'
+
+
+def get_hour_message():
+    h = datetime.datetime.fromtimestamp(int(time.time()),pytz.timezone('Asia/Shanghai')).hour
+    if 6 <= h <= 11:
+        return '晨'
+    elif 12 <= h <= 17:
+        return '午'
+    elif 18 <= h <= 24:
+        return '晚'
+    else:
+        return '凌晨'
+
 
 def main_handler(event, context):
 
@@ -97,8 +112,7 @@ def main_handler(event, context):
     # 基于 Server 酱的推送服务,
     SCKEY = ''
 
-    message = commit_data(student_id, password)
-
+    message = get_hour_message() + '检-' + commit_data(student_id, password)
     if SCKEY != '':
         server_jiang_push(SCKEY, message)
 
