@@ -112,7 +112,8 @@ def main_handler(event, context):
     # 基于 Server 酱的推送服务,
     SCKEY = ''
 
-    message = get_hour_message() + '检-' + commit_data(student_id, password)
+    # 丨是汉字，微信标题不能有符号
+    message = get_hour_message() + '检丨' + commit_data(student_id, password)
     if SCKEY != '':
         server_jiang_push(SCKEY, message)
 
